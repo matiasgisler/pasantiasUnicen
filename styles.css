@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,600&display=swap');
+.is-invalid {
+    border: 2px solid red;
+}
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    font-size: 18px;
+    text-align: center;
+    margin: 20px auto;
+    width: 80%;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    font-size: 18px;
+    text-align: center;
+    margin: 20px auto;
+    width: 80%;
+}
+
+input[style*="border: 2px solid red"] {
+    background-color: #ffe6e6;
+}
+
+.poppins-semibold-italic {
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-style: italic;
+}
+  
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        /* Estilos del modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+button{
+    padding: 10px;
+}
+
+
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f7; /* Color de fondo ligero */
+        }
+
+        /* Estilo del header */
+        .header {
+            background-color: #005f99; /* Azul oscuro */
+            color: white;
+            padding: 20px;
+        }
+
+        .titulointerfaz {
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        /* Estilo del contenedor consultas */
+        .consultas {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap; /* Evitar que los elementos se vayan a la siguiente línea */
+            justify-content: space-between; /* Distribuye los elementos a lo largo de toda la fila */
+            align-items: center;
+            background-color: #005f99; /* Azul oscuro */
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .consultas_filtrado,
+        .consulta_Ordenarpor,
+        .consulta_botones {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .consultas label {
+            color: white;
+        }
+
+        .consultas select,
+        .consultas input[type="text"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            color: #005f99;
+        }
+
+        .consultas input[type="submit"],
+        .consultas input[type="button"] {
+            background-color: #99cc00; /* Verde lima */
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .consultas input[type="submit"]:hover,
+        .consultas input[type="button"]:hover {
+            background-color: #86b300; /* Verde lima más oscuro */
+        }
+
+        /* Estilo de la tabla */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+        }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background-color: #005f99; /* Azul oscuro */
+            color: white;
+        }
+
+        .table tr:hover {
+            background-color: #e6f7ff; /* Azul claro en hover */
+        }
+
+        /* Estilo del modal */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro con transparencia */
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #005f99; /* Borde azul */
+            width: 80%;
+        }
+
+        .close {
+            color: #005f99; /* Azul oscuro */
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #99cc00; /* Verde lima */
+            text-decoration: none;
+            cursor: pointer;
+        }
