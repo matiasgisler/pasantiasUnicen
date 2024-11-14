@@ -48,7 +48,7 @@ header('Pragma: no-cache');
 $output = fopen('php://output', 'w');
 
 // Escribir encabezados en el archivo CSV
-fputcsv($output, ['ID', 'Carrera', 'Apellido y Nombre', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
+fputcsv($output, ['ID', 'Fecha_hora',  'Apellido y Nombre', 'Carrera', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
 
 // Escribir los datos en el archivo CSV
 while ($row = $result->fetch_assoc()) {
