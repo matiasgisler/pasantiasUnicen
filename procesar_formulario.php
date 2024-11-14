@@ -20,13 +20,7 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-
-
-
-
-
 // Recoger los datos del formulario
-
 $Carrera = $_POST['carrera'];
 $apellido_nombre = $_POST['apellido_nombre'];
 $DNI = $_POST['DNI'];
@@ -51,12 +45,30 @@ $desocupado = isset($_POST['desocupado']) ? $_POST['desocupado'] : NULL;
 $capacitarse = $_POST['capacitarse'];
 $acompanar = $_POST['acompanar'];
 
+// Verificar si el DNI ya existe en la base de datos
+$check_sql = "SELECT id FROM formulario_etapas WHERE DNI = ?";
+$stmt_check = $conn->prepare($check_sql);
+$stmt_check->bind_param("s", $DNI);
+$stmt_check->execute();
+$result = $stmt_check->get_result();
+
+if ($result->num_rows > 0) {
+    // Si existe, actualizar la columna estado a "inactivo"
+    $update_sql = "UPDATE formulario_etapas SET estado = 'inactivo' WHERE DNI = ?";
+    $stmt_update = $conn->prepare($update_sql);
+    $stmt_update->bind_param("s", $DNI);
+    $stmt_update->execute();
+    $stmt_update->close();
+}
+
+$stmt_check->close();
+
 // Insertar los datos en la base de datos
-$sql = "INSERT INTO formulario_etapas ( carrera, apellido_nombre, DNI, fecha_egreso, telefono, correo, ciudad, situacion_laboral, empresa, localidadempresa, cargo, area, mail, vinculacion, Actividad, Docente,cargo_docente, Departamento_docente, becario, no_docente, desocupado, capacitarse, acompanar) 
-        VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO formulario_etapas (carrera, apellido_nombre, DNI, fecha_egreso, telefono, correo, ciudad, situacion_laboral, empresa, localidadempresa, cargo, area, mail, vinculacion, Actividad, Docente, cargo_docente, Departamento_docente, becario, no_docente, desocupado, capacitarse, acompanar) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssssssssssssssssssss", $Carrera, $apellido_nombre, $DNI, $fecha_egreso, $telefono, $correo, $ciudad, $situacion_laboral, $empresa, $localidadempresa, $cargo, $area, $mail, $vinculacion, $Actividad, $Docente,$cargo_docente, $Departamento_docente, $becario, $no_docente, $desocupado, $capacitarse, $acompanar);
+$stmt->bind_param("sssssssssssssssssssssss", $Carrera, $apellido_nombre, $DNI, $fecha_egreso, $telefono, $correo, $ciudad, $situacion_laboral, $empresa, $localidadempresa, $cargo, $area, $mail, $vinculacion, $Actividad, $Docente, $cargo_docente, $Departamento_docente, $becario, $no_docente, $desocupado, $capacitarse, $acompanar);
 
 if ($stmt->execute()) {
     // Redirigir a la URL deseada después del envío exitoso

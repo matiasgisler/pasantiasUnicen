@@ -89,7 +89,7 @@ function exportToCSV($conn, $sql)
     $output = fopen('php://output', 'w');
 
     // Escribir encabezados en el archivo CSV
-    fputcsv($output, ['ID', 'Carrera', 'Apellido y Nombre', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
+    fputcsv($output, ['ID', 'Marca Temporal',  'Apellido y Nombre', 'Carrera', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
 
     // Ejecutar la consulta
     $result = $conn->query($sql);
@@ -255,6 +255,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                             title="Seleccione columna para filtrar" onchange="updateFilterInput(this)">
                                             <option value="">Seleccione</option>
                                             <option value="carrera">Carrera</option>
+                                            <option value="DNI">DNI</option>
                                             <option value="apellido_nombre">Apellido y Nombre</option>
                                             <option value="ciudad">Ciudad</option>
                                             <option value="situacion_laboral">Situación Laboral</option>
@@ -300,7 +301,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 </div>
                 <div class="col-md-4 ">
                     <button id="ordenarPor" type="button" class="btn btn-secondary mt-n1"
-                        onclick="orderBy()">Ordenar</button>
+                        onclick="orderBy(event)">Ordenar</button>
                 </div>
             </div>
             <div>
@@ -319,10 +320,11 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
             <tr>
                 <th>Numero de la Fila</th>
                 <th>Acciones</th>
-                <th>Carrera</th>
+                <th>Fecha y Hora (DD/MM/YYYY - hh:mm:ss )</th>
                 <th>Apellido y Nombre</th>
+                <th>Carrera</th>
                 <th>DNI</th>
-                <th>Fecha de Egreso(YY/MM/DD)</th>
+                <th>Fecha de Egreso(DD/MM/YYYY)</th>
                 <th>Teléfono</th>
                 <th class="correo-col">Correo</th>
                 <th>Ciudad de Residencia</th>
@@ -340,11 +342,26 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <button class="btn btn-primary btn-sm btn-space"
                         onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
                 </td>
+                <td><?php
+                    if (!empty($row['Fecha_hora'])) {
+                        $fecha = new DateTime($row['Fecha_hora']);
+                        echo htmlspecialchars($fecha->format('d/m/Y H:i:s'));
+                    } else {
+                        echo '-';
+                    }
+                ?></td>
+                <td><?php echo !empty($row['apellido_nombre']) ? htmlspecialchars(ucwords(strtolower($row['apellido_nombre']))) : '-'; ?></td>
                 <td><?php echo !empty($row['carrera']) ? htmlspecialchars($row['carrera']) : '-'; ?></td>
-                <td><?php echo !empty($row['apellido_nombre']) ? htmlspecialchars(ucwords(strtolower($row['apellido_nombre']))) : '-'; ?>
-                </td>
+                
                 <td><?php echo !empty($row['DNI']) ? htmlspecialchars($row['DNI']) : '-'; ?></td>
-                <td><?php echo !empty($row['Fecha_egreso']) ? htmlspecialchars($row['Fecha_egreso']) : '-'; ?></td>
+                <td><?php
+                    if (!empty($row['Fecha_egreso'])) {
+                        $fecha = new DateTime($row['Fecha_egreso']);
+                        echo htmlspecialchars($fecha->format('d/m/Y'));
+                    } else {
+                        echo '-';
+                    }
+                ?></td>
                 <td><?php echo !empty($row['telefono']) ? htmlspecialchars($row['telefono']) : '-'; ?></td>
                 <td class="correo-col"><?php echo !empty($row['correo']) ? htmlspecialchars($row['correo']) : '-'; ?>
                 </td>
@@ -487,6 +504,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 <select class="form-select filter-column" onchange="updateFilterInput(this)" title="Seleccione la columna para filtrar">
                     <option value="">Seleccione</option>
                     <option value="carrera">Carrera</option>
+                    <option value="DNI">DNI</option>
                     <option value="apellido_nombre">Apellido y Nombre</option>
                     <option value="ciudad">Ciudad</option>
                     <option value="situacion_laboral">Situación Laboral</option>
@@ -509,16 +527,42 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         button.closest('.filter-group').remove();
     }
 
-    function orderBy() {
-        const column = document.getElementById("order_by").value;
-        const direction = document.getElementById("order_dir").value;
+    function orderBy(event) {
+    event.preventDefault();
+    const column = document.getElementById("order_by").value;
+    const direction = document.getElementById("order_dir").value;
 
-        console.log("Ordenar por:", column, "Dirección:", direction); // Para verificar los valores
-
-        if (column && direction) {
-            document.getElementById("filterForm").submit(); // Enviar el formulario
-        }
+    if (column && direction) {
+        // Crear un objeto con los parámetros actuales de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Actualizar o agregar los parámetros de ordenación
+        urlParams.set('order_by', column);
+        urlParams.set('order_dir', direction);
+        
+        // Construir la nueva URL
+        const newUrl = window.location.pathname + '?' + urlParams.toString();
+        
+        // Realizar una petición AJAX
+        fetch(newUrl)
+            .then(response => response.text())
+            .then(html => {
+                // Crear un elemento temporal para parsear el HTML
+                const tempElement = document.createElement('div');
+                tempElement.innerHTML = html;
+                
+                // Actualizar solo la tabla y la paginación
+                document.querySelector('table').outerHTML = tempElement.querySelector('table').outerHTML;
+                document.querySelector('.pagination').outerHTML = tempElement.querySelector('.pagination').outerHTML;
+                
+                // Actualizar la URL del navegador sin recargar la página
+                window.history.pushState({}, '', newUrl);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
+}
 
     function applyFilters() {
         const filters = [];
