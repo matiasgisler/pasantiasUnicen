@@ -15,7 +15,7 @@ if ($conn->connect_error) {
 $user_id = intval($_GET['id']);
 
 // Obtener los datos específicos del usuario por su ID
-$sql = "SELECT apellido_nombre FROM formulario_etapas WHERE id = ?";
+$sql = "SELECT apellido_nombre, dni FROM formulario_etapas WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -24,11 +24,20 @@ $record = $result->fetch_assoc();
 
 if ($record) {
     $apellido_nombre = $record['apellido_nombre'];
+    $dni = $record['dni'];
 
-    // Obtener todos los registros con el mismo apellido_nombre
-    $sql_all_records = "SELECT * FROM formulario_etapas WHERE apellido_nombre = ? ORDER BY Fecha_egreso DESC";
-    $stmt_all = $conn->prepare($sql_all_records);
-    $stmt_all->bind_param("s", $apellido_nombre);
+    // Si el DNI está disponible, usarlo como criterio de búsqueda principal
+    if (!empty($dni)) {
+        $sql_all_records = "SELECT * FROM formulario_etapas WHERE dni = ? ORDER BY id DESC";
+        $stmt_all = $conn->prepare($sql_all_records);
+        $stmt_all->bind_param("s", $dni);
+    } else {
+        // Si no hay DNI, usar apellido_nombre como criterio de búsqueda
+        $sql_all_records = "SELECT * FROM formulario_etapas WHERE apellido_nombre = ? ORDER BY id DESC";
+        $stmt_all = $conn->prepare($sql_all_records);
+        $stmt_all->bind_param("s", $apellido_nombre);
+    }
+
     $stmt_all->execute();
     $result_all = $stmt_all->get_result();
 
@@ -41,6 +50,7 @@ if ($record) {
             // Listado de campos de cada registro
             $fields = [
                 'Apellido y Nombre' => $row['apellido_nombre'],
+                'DNI' => $row['DNI'],
                 'Ciudad de Residencia' => $row['ciudad'],
                 'Situación Laboral' => $row['situacion_laboral'],
                 'Empresa' => $row['empresa'],
@@ -48,7 +58,7 @@ if ($record) {
                 'Cargo' => $row['cargo'],
                 'Área' => $row['area'],
                 'Mail' => $row['mail'],
-                'Vinculo con la FIO' => $row['vinculacion'],
+                'Vínculo con la FIO' => $row['vinculacion'],
                 'Actividad' => $row['Actividad'],
                 'Docente' => $row['Docente'],
                 'Cargo Docente' => $row['cargo_docente'],
@@ -68,7 +78,7 @@ if ($record) {
             echo "</div><hr>"; // Separador entre registros
         }
     } else {
-        echo "<p>No se encontraron registros con el mismo nombre.</p>";
+        echo "<p>No se encontraron registros con el DNI o nombre proporcionado.</p>";
     }
 } else {
     echo "<p>No se encontró el usuario con el ID proporcionado.</p>";
