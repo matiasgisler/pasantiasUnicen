@@ -72,12 +72,13 @@ if ($result === false) {
 }
 
 /**
- * Exporta los datos filtrados a un archivo CSV y los descarga.
+ * Exporta los datos filtrados a un archivo CSV con las columnas deseadas.
  *
  * @param mysqli $conn Conexión a la base de datos.
  * @param string $sql Consulta SQL con filtros aplicados.
+ * @param array $columns Columnas deseadas para exportar.
  */
-function exportToCSV($conn, $sql)
+function exportToCSV($conn, $sql, $columns)
 {
     // Configurar encabezados para la exportación a CSV
     header('Content-Type: text/csv; charset=UTF-8');
@@ -88,18 +89,28 @@ function exportToCSV($conn, $sql)
     // Crear el archivo CSV
     $output = fopen('php://output', 'w');
 
-    // Escribir encabezados en el archivo CSV
-    fputcsv($output, ['ID', 'Marca Temporal',  'Apellido y Nombre', 'Carrera', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
+    // Validar y preparar columnas
+    if (empty($columns)) {
+        die("Error: No se especificaron columnas para exportar.");
+    }
+
+    // Escribir encabezados personalizados en el archivo CSV
+    fputcsv($output, $columns);
+
+    // Construir la consulta SQL con columnas específicas
+    $columns_sql = implode(", ", array_map(fn($col) => $conn->real_escape_string($col), $columns));
+    $filtered_sql = preg_replace('/^SELECT \*/', "SELECT $columns_sql", $sql);
 
     // Ejecutar la consulta
-    $result = $conn->query($sql);
+    $result = $conn->query($filtered_sql);
     if ($result === false) {
         die("Error en la consulta para exportar: " . $conn->error);
     }
 
     // Escribir los datos en el archivo CSV
     while ($row = $result->fetch_assoc()) {
-        fputcsv($output, $row);
+        $filtered_row = array_intersect_key($row, array_flip($columns));
+        fputcsv($output, $filtered_row);
     }
 
     fclose($output);
@@ -108,9 +119,11 @@ function exportToCSV($conn, $sql)
 
 // Detectar si se solicita la exportación
 if (isset($_GET['export']) && $_GET['export'] == 1) {
-    exportToCSV($conn, $sql);
+    $columns = isset($_GET['columns']) ? $_GET['columns'] : [];
+    exportToCSV($conn, $sql, $columns);
 }
 ?>
+
 
 
 
@@ -305,75 +318,91 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 </div>
             </div>
             <div>
-                <form method="get" action="">
-                    <input type="hidden" name="filters"
-                        value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
-                    <input type="hidden" name="export" value="1">
-                    <button type="submit" class="btn btn-success">Exportar a CSV</button>
-                </form>
+    <form method="get" action="">
+        <input type="hidden" name="filters" value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
+        <input type="hidden" name="export" value="1">
+
+        <div class="mb-3">
+            <label class="form-label">Seleccionar columnas para exportar:</label>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="id" id="column-id" checked data-column="id-col">
+                <label class="form-check-label" for="column-id">ID</label>
             </div>
-        </form>
-    </div>
-    <table class="table table-striped table-bordered w-100 table-hover">
-        <thead class="table-primary">
-            <tr>
-                <th>Numero de la Fila</th>
-                <th>Acciones</th>
-                <th>Fecha y Hora (DD/MM/YYYY - hh:mm:ss )</th>
-                <th>Apellido y Nombre</th>
-                <th>Carrera</th>
-                <th>DNI</th>
-                <th>Fecha de Egreso(DD/MM/YYYY)</th>
-                <th>Teléfono</th>
-                <th class="correo-col">Correo</th>
-                <th>Ciudad de Residencia</th>
-                <th>Nombre de la Empresa / Organización:</th>
-                <th>Vinculación con la Universidad</th>
-                <th>Qué Temática le Interesaría CAPACITARSE</th>
-                <th>DE qué Manera la FIO lo/la Puede Acompañar Luego de su Graduación</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($i++); ?></td>
-                <td>
-                    <button class="btn btn-primary btn-sm btn-space"
-                        onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
-                </td>
-                <td><?php
-                    if (!empty($row['Fecha_hora'])) {
-                        $fecha = new DateTime($row['Fecha_hora']);
-                        echo htmlspecialchars($fecha->format('d/m/Y H:i:s'));
-                    } else {
-                        echo '-';
-                    }
-                ?></td>
-                <td><?php echo !empty($row['apellido_nombre']) ? htmlspecialchars(ucwords(strtolower($row['apellido_nombre']))) : '-'; ?></td>
-                <td><?php echo !empty($row['carrera']) ? htmlspecialchars($row['carrera']) : '-'; ?></td>
-                
-                <td><?php echo !empty($row['DNI']) ? htmlspecialchars($row['DNI']) : '-'; ?></td>
-                <td><?php
-                    if (!empty($row['Fecha_egreso'])) {
-                        $fecha = new DateTime($row['Fecha_egreso']);
-                        echo htmlspecialchars($fecha->format('d/m/Y'));
-                    } else {
-                        echo '-';
-                    }
-                ?></td>
-                <td><?php echo !empty($row['telefono']) ? htmlspecialchars($row['telefono']) : '-'; ?></td>
-                <td class="correo-col"><?php echo !empty($row['correo']) ? htmlspecialchars($row['correo']) : '-'; ?>
-                </td>
-                <td><?php echo !empty($row['ciudad']) ? htmlspecialchars($row['ciudad']) : '-'; ?></td>
-                <td><?php echo !empty($row['empresa']) ? htmlspecialchars($row['empresa']) : '-'; ?></td>
-                <td><?php echo !empty($row['vinculacion']) ? htmlspecialchars($row['vinculacion']) : '-'; ?></td>
-                <td><?php echo !empty($row['capacitarse']) ? htmlspecialchars($row['capacitarse']) : '-'; ?></td>
-                <td><?php echo !empty($row['acompanar']) ? htmlspecialchars($row['acompanar']) : '-'; ?></td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-        </tbody>
-    </table>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="apellido_nombre" id="column-apellido_nombre" checked data-column="apellido_nombre-col">
+                <label class="form-check-label" for="column-apellido_nombre">Apellido y Nombre</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="carrera" id="column-carrera" checked data-column="carrera-col">
+                <label class="form-check-label" for="column-carrera">Carrera</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="DNI" id="column-DNI" checked data-column="dni-col">
+                <label class="form-check-label" for="column-DNI">DNI</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="Fecha_egreso" id="column-Fecha_egreso" checked data-column="fecha_egreso-col">
+                <label class="form-check-label" for="column-Fecha_egreso">Fecha de Egreso</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="telefono" id="column-telefono" checked data-column="telefono-col">
+                <label class="form-check-label" for="column-telefono">Teléfono</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="correo" id="column-correo" checked data-column="correo-col">
+                <label class="form-check-label" for="column-correo">Correo</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="ciudad" id="column-ciudad" checked data-column="ciudad-col">
+                <label class="form-check-label" for="column-ciudad">Ciudad de Residencia</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="empresa" id="column-empresa" checked data-column="empresa-col">
+                <label class="form-check-label" for="column-empresa">Nombre de la Empresa</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input column-toggle" type="checkbox" name="columns[]" value="vinculacion" id="column-vinculacion" checked data-column="vinculacion-col">
+                <label class="form-check-label" for="column-vinculacion">Vinculación con la Universidad</label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Exportar a CSV</button>
+    </form>
+</div>
+
+<table class="table table-striped table-bordered w-100 table-hover">
+    <thead>
+        <tr>
+            <th class="id-col">ID</th>
+            <th class="apellido_nombre-col">Apellido y Nombre</th>
+            <th class="carrera-col">Carrera</th>
+            <th class="dni-col">DNI</th>
+            <th class="fecha_egreso-col">Fecha de Egreso</th>
+            <th class="telefono-col">Teléfono</th>
+            <th class="correo-col">Correo</th>
+            <th class="ciudad-col">Ciudad de Residencia</th>
+            <th class="empresa-col">Nombre de la Empresa</th>
+            <th class="vinculacion-col">Vinculación</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php while ($row = $result->fetch_assoc()): ?>
+        <tr>
+            <td class="id-col"><?php echo htmlspecialchars($row['id']); ?></td>
+            <td class="apellido_nombre-col"><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
+            <td class="carrera-col"><?php echo htmlspecialchars($row['carrera']); ?></td>
+            <td class="dni-col"><?php echo htmlspecialchars($row['DNI']); ?></td>
+            <td class="fecha_egreso-col"><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
+            <td class="telefono-col"><?php echo htmlspecialchars($row['telefono']); ?></td>
+            <td class="correo-col"><?php echo htmlspecialchars($row['correo']); ?></td>
+            <td class="ciudad-col"><?php echo htmlspecialchars($row['ciudad']); ?></td>
+            <td class="empresa-col"><?php echo htmlspecialchars($row['empresa']); ?></td>
+            <td class="vinculacion-col"><?php echo htmlspecialchars($row['vinculacion']); ?></td>
+        </tr>
+        <?php endwhile; ?>
+    </tbody>
+</table>
+
 
     <!-- Paginación -->
     <div class="pagination mt-4 d-flex align-items-center justify-content-center">
@@ -526,6 +555,15 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         button.closest('.filter-group').remove();
     }
 
+    document.querySelectorAll('.column-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', function () {
+        const columnClass = this.getAttribute('data-column');
+        const columnCells = document.querySelectorAll(`.${columnClass}`);
+        columnCells.forEach(cell => {
+            cell.style.display = this.checked ? '' : 'none';
+        });
+    });
+});
     function orderBy(event) {
     event.preventDefault();
     const column = document.getElementById("order_by").value;
