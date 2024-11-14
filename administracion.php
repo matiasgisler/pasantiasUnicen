@@ -303,6 +303,14 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                         onclick="orderBy()">Ordenar</button>
                 </div>
             </div>
+            <div>
+                <form method="get" action="">
+                    <input type="hidden" name="filters"
+                        value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
+                    <input type="hidden" name="export" value="1">
+                    <button type="submit" class="btn btn-success">Exportar a CSV</button>
+                </form>
+            </div>
         </form>
     </div>
     <table class="table table-striped table-bordered w-100 table-hover">
