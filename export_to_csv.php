@@ -40,7 +40,7 @@ if ($result === false) {
 
 // Configurar encabezados para la exportación a CSV
 header('Content-Type: text/csv; charset=UTF-8');
-header('Content-Disposition: attachment; filename="datos_filtrados_' . date('Ymd_His') . '.csv"');
+header('Content-Disposition: attachment; filename="Inscriptos Unicen' . date('Ymd_His') . '.csv"');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Pragma: no-cache');
 

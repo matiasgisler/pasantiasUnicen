@@ -81,7 +81,7 @@ function exportToCSV($conn, $sql)
 {
     // Configurar encabezados para la exportación a CSV
     header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="datos_filtrados_' . date('Ymd_His') . '.csv"');
+    header('Content-Disposition: attachment; filename="Inscriptos_Unicen-' . date('d-m-y') . '.csv"');
     header('Cache-Control: no-store, no-cache, must-revalidate');
     header('Pragma: no-cache');
 
@@ -239,7 +239,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <div class="modal-footer gap-3 col-gap-3">
                         <button type="button" class="btn btn-secondary" onclick="addFilter()">Agregar filtro</button>
                         <button type="button" class="btn btn-primary" onclick="applyFilters()">Aplicar filtros</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                         <button type="button" class="btn btn-secondary" onclick="clearFilters()">Quitar Filtros</button>
                     </div>
                     <!-- Modal de Filtros -->
