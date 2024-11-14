@@ -310,7 +310,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <input type="hidden" name="export" value="1">
                     <button type="submit" class="btn btn-success">Exportar a CSV</button>
                 </form>
-
             </div>
         </form>
     </div>
