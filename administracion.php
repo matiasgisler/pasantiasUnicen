@@ -239,7 +239,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <div class="modal-footer gap-3 col-gap-3">
                         <button type="button" class="btn btn-secondary" onclick="addFilter()">Agregar filtro</button>
                         <button type="button" class="btn btn-primary" onclick="applyFilters()">Aplicar filtros</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                         <button type="button" class="btn btn-secondary" onclick="clearFilters()">Quitar Filtros</button>
                     </div>
                     <!-- Modal de Filtros -->
@@ -303,15 +302,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <button id="ordenarPor" type="button" class="btn btn-secondary mt-n1"
                         onclick="orderBy()">Ordenar</button>
                 </div>
-            </div>
-            <div>
-                <form method="get" action="">
-                    <input type="hidden" name="filters"
-                        value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
-                    <input type="hidden" name="export" value="1">
-                    <button type="submit" class="btn btn-success">Exportar a CSV</button>
-                </form>
-
             </div>
         </form>
     </div>
