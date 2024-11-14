@@ -26,7 +26,7 @@ function ordenar_nombre($nombre) {
 
 // Función para validar y convertir fechas con hora
 function formatear_fecha_hora($fecha_str) {
-    $fecha = DateTime::createFromFormat('d/m/y H:i:s', $fecha_str);
+    $fecha = DateTime::createFromFormat('d/m/Y H:i:s', $fecha_str);
     return $fecha ? $fecha->format('Y-m-d H:i:s') : null;
 }
 
@@ -50,10 +50,8 @@ if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
         $Fecha_hora = !empty($data[0]) ? formatear_fecha_hora($data[0]) : null;
         $carrera = $data[1] ?? '';
         $apellido_nombre = ordenar_nombre($data[2] ?? '');
-
         // Convertir Fecha Egreso a formato compatible
         $fecha_egreso = !empty($data[3]) ? formatear_fecha($data[3]) : null;
-
         // Resto de los campos
         $telefono = $data[4] ?? '';
         $correo = $data[5] ?? '';
@@ -101,12 +99,12 @@ if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
 
         // Inserción en la base de datos con estado 'activo'
         $sql = "INSERT INTO formulario_etapas (
-                    Fecha_hora, carrera, apellido_nombre, Fecha_egreso, telefono, correo, ciudad, 
-                    situacion_laboral, empresa, localidadempresa, cargo, area, mail, relaciontrabajo, 
-                    vinculacion, Actividad, Docente, cargo_docente, Departamento_docente, becario, 
-                    no_docente, desocupado, capacitarse, acompanar, estado
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activo')";
-
+            Fecha_hora, carrera, apellido_nombre, Fecha_egreso, telefono, correo, ciudad, 
+            situacion_laboral, empresa, localidadempresa, cargo, area, mail, relaciontrabajo, 
+            vinculacion, Actividad, Docente, cargo_docente, Departamento_docente, becario, 
+            no_docente, desocupado, capacitarse, acompanar, estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activo')";
+        
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
             "ssssssssssssssssssssssss",
@@ -115,6 +113,7 @@ if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
             $vinculacion, $actividad, $docente, $cargo_docente, $departamento_docente, $becario,
             $no_docente, $desocupado, $capacitarse, $acompanar
         );
+        
 
         // Ejecutar la consulta e imprimir error si ocurre
         if (!$stmt->execute()) {
