@@ -14,6 +14,9 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
+// Configurar la codificación de la base de datos
+$conn->set_charset("utf8mb4");
+
 // Configuración de paginación
 $limit = 50; // Número de registros por página
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -34,19 +37,25 @@ if (isset($_GET['filters']) && !empty($_GET['filters'])) {
 
     if (is_array($filters)) {
         foreach ($filters as $filter) {
-            if (isset($filter['column']) && isset($filter['value'])) {
+            if (isset($filter['column'])) {
                 $filter_column = $conn->real_escape_string($filter['column']);
-                $filter_value = $conn->real_escape_string($filter['value']);
 
-                if ($filter_column === 'Fecha_egreso' && isset($filter['year_only']) && $filter['year_only']) {
-                    $conditions[] = "YEAR(Fecha_egreso) = '$filter_value'";
-                } else {
+                if ($filter_column === 'Fecha_egreso' && isset($filter['from']) && isset($filter['to'])) {
+                    $from_year = (int)$filter['from'];
+                    $to_year = (int)$filter['to'];
+                    if ($from_year && $to_year) {
+                        $conditions[] = "YEAR(Fecha_egreso) BETWEEN '$from_year' AND '$to_year'";
+                    } elseif ($from_year) {
+                        $conditions[] = "YEAR(Fecha_egreso) >= '$from_year'";
+                    } elseif ($to_year) {
+                        $conditions[] = "YEAR(Fecha_egreso) <= '$to_year'";
+                    }
+                } elseif (isset($filter['value'])) {
+                    $filter_value = $conn->real_escape_string($filter['value']);
                     $conditions[] = "$filter_column LIKE '%$filter_value%'";
                 }
             }
         }
-    } else {
-        die("Error: Los filtros no tienen un formato válido.");
     }
 }
 
@@ -72,34 +81,42 @@ if ($result === false) {
 }
 
 /**
- * Exporta los datos filtrados a un archivo CSV con las columnas deseadas.
+ * Exporta los datos filtrados a un archivo en formato Excel (.xls).
  *
  * @param mysqli $conn Conexión a la base de datos.
  * @param string $sql Consulta SQL con filtros aplicados.
  * @param array $columns Columnas deseadas para exportar.
  */
-function exportToCSV($conn, $sql, $columns)
+function exportToXls($conn, $sql, $columns)
 {
-    // Configurar encabezados para la exportación a CSV
-    header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="Inscriptos_Unicen-' . date('d-m-y') . '.csv"');
+    // Utilizar la consulta con paginación y filtros
+    global $sql_with_pagination;
+    $filtered_sql = $sql_with_pagination;
+
+    // Configurar encabezados para la exportación a Excel
+    header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="Inscriptos_Unicen-' . date('d-m-y') . '.xls"');
     header('Cache-Control: no-store, no-cache, must-revalidate');
     header('Pragma: no-cache');
 
-    // Crear el archivo CSV
-    $output = fopen('php://output', 'w');
+    // Crear el archivo Excel (formato HTML compatible con Excel)
+    echo "<table border='1'>";
 
     // Validar y preparar columnas
     if (empty($columns)) {
         die("Error: No se especificaron columnas para exportar.");
     }
 
-    // Escribir encabezados personalizados en el archivo CSV
-    fputcsv($output, $columns);
+    // Escribir encabezados personalizados en el archivo Excel
+    echo "<tr>";
+    foreach ($columns as $column) {
+        echo "<th>" . htmlspecialchars($column) . "</th>";
+    }
+    echo "</tr>";
 
     // Construir la consulta SQL con columnas específicas
     $columns_sql = implode(", ", array_map(fn($col) => $conn->real_escape_string($col), $columns));
-    $filtered_sql = preg_replace('/^SELECT \*/', "SELECT $columns_sql", $sql);
+    $filtered_sql = preg_replace('/^SELECT \*/', "SELECT $columns_sql", $filtered_sql);
 
     // Ejecutar la consulta
     $result = $conn->query($filtered_sql);
@@ -107,21 +124,27 @@ function exportToCSV($conn, $sql, $columns)
         die("Error en la consulta para exportar: " . $conn->error);
     }
 
-    // Escribir los datos en el archivo CSV
+    // Escribir los datos en el archivo Excel
     while ($row = $result->fetch_assoc()) {
-        $filtered_row = array_intersect_key($row, array_flip($columns));
-        fputcsv($output, $filtered_row);
+        echo "<tr>";
+        foreach ($columns as $column) {
+            echo "<td>" . htmlspecialchars($row[$column]) . "</td>";
+        }
+        echo "</tr>";
     }
 
-    fclose($output);
+    echo "</table>";
     exit();
 }
 
 // Detectar si se solicita la exportación
 if (isset($_GET['export']) && $_GET['export'] == 1) {
     $columns = isset($_GET['columns']) ? $_GET['columns'] : [];
-    exportToCSV($conn, $sql, $columns);
+    exportToXls($conn, $sql, $columns);
 }
+
+
+
 ?>
 
 
@@ -138,17 +161,17 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <link rel="stylesheet" href="administracion.css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="administracion.js" defer></script>
+    <script src="administracion.js"></script>
 </head>
 
-<body class="container-fluid py-4">
+    <body class="container-fluid py-4">
     <h1>Interfaz de Administración</h1>
 
     <div class="accordion" id="accordionExample">
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-                    aria-expanded="true" aria-controls="collapseOne">
+                <button class="accordion-button bg-light" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                     <p class="fs-3">Filtros</p>
                 </button>
             </h2>
@@ -180,6 +203,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                             <option value="ciudad">Ciudad</option>
                                             <option value="situacion_laboral">Situación Laboral</option>
                                             <option value="Fecha_egreso">Año de Egreso</option>
+                                            
                                             <option value="correo">Correo</option>
                                             <option value="empresa">Nombre de la Empresa</option>
                                         </select>
@@ -231,8 +255,9 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                         <div class="accordion-item">
                             <h2 class="accordion-header ">
 
-                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                <button class="accordion-button collapsed bg-light" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true"
+                                    aria-controls="collapseTwo">
                                     <p class="fs-3">Seleccionar columnas para exportar y/o mostrar</p>
                                 </button>
                             </h2>
@@ -243,21 +268,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                     <input type="hidden" name="export" value="1">
 
                                     <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input column-toggle" type="checkbox"
-                                                name="columns[]" value="id" id="column-id" checked data-column="id-col">
-                                            <label class="form-check-label" for="column-id">ID</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input column-toggle" type="checkbox"
-                                                name="columns[]" value="Fecha_hora" id="column-Fecha_hora" checked data-column="Fecha_hora-col">
-                                            <label class="form-check-label" for="column-Fecha_hora">Fecha y hora Realizado</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input column-toggle" type="checkbox"
-                                                name="columns[]" value="id" id="column-id" checked data-column="id-col">
-                                            <label class="form-check-label" for="column-id">ID</label>
-                                        </div>
                                         <div class="form-check">
                                             <input class="form-check-input column-toggle" type="checkbox"
                                                 name="columns[]" value="apellido_nombre" id="column-apellido_nombre"
@@ -312,12 +322,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input column-toggle" type="checkbox"
-                                                name="columns[]" value="capacitarse" id="column-capacitarse" checked
-                                                data-column="capacitarse-col">
-                                            <label class="form-check-label" for="column-capacitarse">Sobre qué temática le interesaría CAPACITARSE</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input column-toggle" type="checkbox"
                                                 name="columns[]" value="vinculacion" id="column-vinculacion" checked
                                                 data-column="vinculacion-col">
                                             <label class="form-check-label" for="column-vinculacion">Vinculación con la
@@ -329,7 +333,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 </form>
 
             </div>
-        </div>
+    </div>
     </div>
     </div>
 
@@ -339,20 +343,17 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <table class="table table-striped table-bordered w-100 table-hover">
         <thead class="table-primary">
             <tr>
-                <th>Numero de la Fila</th>
-                <th>Acciones</th>
-                <th>Fecha y hora realizada</th>
-                <th>ID</th>
-                <th>Apellido y Nombre</th>
-                <th>Carrera</th>
-                <th>DNI</th>
-                <th>Fecha de Egreso</th>
-                <th>Teléfono</th>
-                <th>Correo</th>
-                <th>Ciudad de Residencia</th>
-                <th>Nombre de la Empresa</th>
-                <th>Sobre qué temática le interesaría CAPACITARSE.</th>
-                <th>De qué manera la FIO lo/la puede acompañar luego de su graduación.</th>
+            <th >Nro de fila</th>
+            <th >Funciones</th>
+                <th class="apellido_nombre-col">Apellido y Nombre</th>
+                <th class="carrera-col">Carrera</th>
+                <th class="dni-col">DNI</th>
+                <th class="fecha_egreso-col">Fecha de Egreso</th>
+                <th class="telefono-col">Teléfono</th>
+                <th class="correo-col">Correo</th>
+                <th class="ciudad-col">Ciudad de Residencia</th>
+                <th class="empresa-col">Nombre de la Empresa</th>
+                <th class="vinculacion-col">Vinculación con la Universidad</th>
             </tr>
         </thead>
         <tbody>
@@ -363,18 +364,15 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <button class="btn btn-primary btn-sm btn-space"
                         onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
                 </td>
-                <td class=""><?php echo htmlspecialchars($row['Fecha_hora']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['id']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['carrera']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['DNI']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['telefono']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['correo']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['ciudad']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['empresa']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['capacitarse']); ?></td>
-                <td class=""><?php echo htmlspecialchars($row['vinculacion']); ?></td>
+                <td class="apellido_nombre-col"><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
+                <td class="carrera-col"><?php echo htmlspecialchars($row['carrera']); ?></td>
+                <td class="dni-col"><?php echo htmlspecialchars($row['DNI']); ?></td>
+                <td class="fecha_egreso-col"><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
+                <td class="telefono-col"><?php echo htmlspecialchars($row['telefono']); ?></td>
+                <td class="correo-col"><?php echo htmlspecialchars($row['correo']); ?></td>
+                <td class="ciudad-col"><?php echo htmlspecialchars($row['ciudad']); ?></td>
+                <td class="empresa-col"><?php echo htmlspecialchars($row['empresa']); ?></td>
+                <td class="vinculacion-col"><?php echo htmlspecialchars($row['vinculacion']); ?></td>
             </tr>
             <?php endwhile; ?>
         </tbody>
@@ -422,7 +420,17 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
             </div>
         </div>
     </div>
-
 </body>
+<script>
+    document.querySelectorAll('.column-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const columnClass = this.getAttribute('data-column');
+        const columnCells = document.querySelectorAll(`.${columnClass}`);
+        columnCells.forEach(cell => {
+            cell.style.display = this.checked ? '' : 'none';
+        });
+    });
+});
 
+</script>
 </html>

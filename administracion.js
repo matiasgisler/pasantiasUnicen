@@ -4,43 +4,52 @@ function updateFilterInput(selectElement) {
 
     if (selectElement.value === 'carrera') {
         filterValueContainer.innerHTML = `
-            <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
-                <option value="Ingeniería en Agrimensura">Ingeniería en Agrimensura</option>
-                <option value="Ingeniería en Construcciones">Ingeniería en Construcciones (no vigente)</option>
-                <option value="Ingeniería civil">Ingeniería civil</option>
-                <option value="Ingeniería Electromecánica">Ingeniería Electromecánica</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Profesorado en Matemática y Física">Profesorado en Matemática y Física</option>
-                <option value="Profesorado en Química Y Merceología">Profesorado en Química Y Merceología</option>
-                <option value="Químico">Químico</option>
-                <option value="Ingeniería en Seguridad e Higiene en el Trabajo">Ingeniería en Seguridad e Higiene en el Trabajo</option>
-                <option value="Licenciatura en Tecnología de los Alimentos">Licenciatura en Tecnología de los Alimentos<    /option>
-                <option value="Profesorado en Química">Profesorado en Química</option>
-                <option value="Técnico Universitario en Electromedicina">Técnico Universitario en Electromedicina</option>
-                <option value="Licenciatura en Tecnología Médica">Licenciatura en Tecnología Médica</option>
-                <option value="Licenciatura en Enseñanza de las Ciencias Naturales">Licenciatura en Enseñanza de las Ciencias Naturales</option>
-                <option value="Maestría en Enseñanza de las Ciencias Experimentales">Maestría en Enseñanza de las Ciencias Experimentales</option>
-                <option value="Maestría en Tecnología del Hormigón">Maestría en Tecnología del Hormigón</option>
-            </select>
-        `;
+        <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
+            <option value="Ingeniería en Agrimensura">Ingeniería en Agrimensura</option>
+            <option value="Ingeniería en Construcciones">Ingeniería en Construcciones (no vigente)</option>
+            <option value="Ingeniería civil">Ingeniería civil</option>
+            <option value="Ingeniería Electromecánica">Ingeniería Electromecánica</option>
+            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+            <option value="Profesorado en Matemática y Física">Profesorado en Matemática y Física</option>
+            <option value="Profesorado en Química Y Merceología">Profesorado en Química Y Merceología</option>
+            <option value="Químico">Químico</option>
+            <option value="Ingeniería en Seguridad e Higiene en el Trabajo">Ingeniería en Seguridad e Higiene en el Trabajo</option>
+            <option value="Licenciatura en Tecnología de los Alimentos">Licenciatura en Tecnología de los Alimentos<    /option>
+            <option value="Profesorado en Química">Profesorado en Química</option>
+            <option value="Técnico Universitario en Electromedicina">Técnico Universitario en Electromedicina</option>
+            <option value="Licenciatura en Tecnología Médica">Licenciatura en Tecnología Médica</option>
+            <option value="Licenciatura en Enseñanza de las Ciencias Naturales">Licenciatura en Enseñanza de las Ciencias Naturales</option>
+            <option value="Maestría en Enseñanza de las Ciencias Experimentales">Maestría en Enseñanza de las Ciencias Experimentales</option>
+            <option value="Maestría en Tecnología del Hormigón">Maestría en Tecnología del Hormigón</option>
+        </select>
+    `;
     } else if (selectElement.value === 'situacion_laboral') {
         filterValueContainer.innerHTML = `
-            <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
-                <option value="Trabajo por cuenta propia">Trabajo por Cuenta Propia</option>
-                <option value="Trabajo en relación de dependencia">Trabajo en Relación de Dependencia</option>
-                <option value="Desempleado/a">Desempleado/a</option>
-                <option value="Jubilado/a">Jubilado/a</option>
-            </select>
-        `;
+        <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
+            <option value="Trabajo por cuenta propia">Trabajo por Cuenta Propia</option>
+            <option value="Trabajo en relación de dependencia">Trabajo en Relación de Dependencia</option>
+            <option value="Desempleado/a">Desempleado/a</option>
+            <option value="Jubilado/a">Jubilado/a</option>
+        </select>
+    `;
     } else if (selectElement.value === 'Fecha_egreso') {
         filterValueContainer.innerHTML = `
-            <input type="year" class="form-control mt-rem" name="filter_value" title="Seleccione el año de egreso">
+            <div class="row">
+                <div class="col">
+                    <label for="year_from">Desde:</label>
+                    <input type="number" id="year_from" class="form-control mt-rem" name="filter_value_from" min="1900" max="${new Date().getFullYear()}" placeholder="Año desde">
+                </div>
+                <div class="col">
+                    <label for="year_to">Hasta:</label>
+                    <input type="number" id="year_to" class="form-control mt-rem" name="filter_value_to" min="1900" max="${new Date().getFullYear()}" placeholder="Año hasta">
+                </div>
+            </div>
         `;
     } else {
         filterValueContainer.innerHTML = `
-            <input type="text" class="form-control mt-rem" name="filter_value" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
-        `;
+        <input type="text" class="form-control mt-rem" name="filter_value" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
+    `;
     }
 }
 
@@ -73,27 +82,27 @@ function addFilter() {
     const newFilterGroup = document.createElement('div');
     newFilterGroup.classList.add('filter-group', 'mb-3');
     newFilterGroup.innerHTML = `
-    <div class="row g-2">
-        <div class="col">
-            <label>Filtrar por:</label>
-            <select class="form-select filter-column" onchange="updateFilterInput(this)" title="Seleccione la columna para filtrar">
-                <option value="">Seleccione</option>
-                <option value="carrera">Carrera</option>
-                <option value="DNI">DNI</option>
-                <option value="apellido_nombre">Apellido y Nombre</option>
-                <option value="ciudad">Ciudad</option>
-                <option value="situacion_laboral">Situación Laboral</option>
-                <option value="Fecha_egreso">Fecha de Egreso</option>
-                <option value="empresa">Nombre de la Empresa</option>
-            </select>
-        </div>
-        <div class="col filter-value">
-            <input type="text" class="form-control mt-rem" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
-        </div>
-        <div class="col-auto">
-            <button type="button" class="btn btn-danger mt-rem" onclick="removeFilter(this)">Eliminar</button>
-        </div>
+<div class="row g-2">
+    <div class="col">
+        <label>Filtrar por:</label>
+        <select class="form-select filter-column" onchange="updateFilterInput(this)" title="Seleccione la columna para filtrar">
+            <option value="">Seleccione</option>
+            <option value="carrera">Carrera</option>
+            <option value="DNI">DNI</option>
+            <option value="apellido_nombre">Apellido y Nombre</option>
+            <option value="ciudad">Ciudad</option>
+            <option value="situacion_laboral">Situación Laboral</option>
+            <option value="Fecha_egreso">Año de Egreso</option>
+            <option value="empresa">Nombre de la Empresa</option>
+        </select>
     </div>
+    <div class="col filter-value">
+        <input type="text" class="form-control mt-rem" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
+    </div>
+    <div class="col-auto">
+        <button type="button" class="btn btn-danger mt-rem" onclick="removeFilter(this)">Eliminar</button>
+    </div>
+</div>
 `;
     filterContainer.appendChild(newFilterGroup);
 }
@@ -102,15 +111,6 @@ function removeFilter(button) {
     button.closest('.filter-group').remove();
 }
 
-document.querySelectorAll('.column-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const columnClass = this.getAttribute('data-column');
-        const columnCells = document.querySelectorAll(`.${columnClass}`);
-        columnCells.forEach(cell => {
-            cell.style.display = this.checked ? '' : 'none';
-        });
-    });
-});
 
 function orderBy(event) {
     event.preventDefault();
@@ -155,12 +155,21 @@ function applyFilters() {
     const filters = [];
     document.querySelectorAll('.filter-group').forEach(group => {
         const column = group.querySelector('.filter-column').value;
-        const value = group.querySelector('.filter-value select, .filter-value input').value;
-        if (column && value) {
-            filters.push({
-                column,
-                value
-            });
+        if (column === 'Fecha_egreso') {
+            const yearFrom = group.querySelector('[name="filter_value_from"]').value;
+            const yearTo = group.querySelector('[name="filter_value_to"]').value;
+            if (yearFrom || yearTo) {
+                filters.push({
+                    column,
+                    from: yearFrom,
+                    to: yearTo
+                });
+            }
+        } else {
+            const value = group.querySelector('.filter-value select, .filter-value input').value;
+            if (column && value) {
+                filters.push({ column, value });
+            }
         }
     });
 
