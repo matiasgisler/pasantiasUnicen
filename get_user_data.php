@@ -20,68 +20,89 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$record = $result->fetch_assoc();
+$user = $result->fetch_assoc();
 
-if ($record) {
-    $apellido_nombre = $record['apellido_nombre'];
-    $dni = $record['dni'];
+if ($user) {
+    // Log para depuración
+    error_log("Datos encontrados para el usuario ID: " . $user_id);
+    
+    echo '<div class="container-fluid mb-4">';
+    echo '<h3 class="mb-3">Envío del formulario: ' . htmlspecialchars($user['Fecha_hora']) . '</h3>';
 
-    // Si el DNI está disponible, usarlo como criterio de búsqueda principal
-    if (!empty($dni)) {
-        $sql_all_records = "SELECT * FROM formulario_etapas WHERE dni = ? ORDER BY id DESC";
-        $stmt_all = $conn->prepare($sql_all_records);
-        $stmt_all->bind_param("s", $dni);
-    } else {
-        // Si no hay DNI, usar apellido_nombre como criterio de búsqueda
-        $sql_all_records = "SELECT * FROM formulario_etapas WHERE apellido_nombre = ? ORDER BY id DESC";
-        $stmt_all = $conn->prepare($sql_all_records);
-        $stmt_all->bind_param("s", $apellido_nombre);
-    }
+    // Información Personal
+    echo '<div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Información Personal</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Apellido y Nombre:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['apellido_nombre']) . '</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">DNI:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['DNI']) . '</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Ciudad de Residencia:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['ciudad']) . '</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Carrera:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['carrera']) . '</p>
+                    </div>
+                </div>
+            </div>
+        </div>';
 
-    $stmt_all->execute();
-    $result_all = $stmt_all->get_result();
+    // Información Laboral
+    echo '<div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Información Laboral</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Empresa:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['empresa']) . '</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Situación Laboral:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['situacion_laboral']) . '</p>
+                    </div>
+                </div>
+            </div>
+        </div>';
 
-    if ($result_all->num_rows > 0) {
-        // Mostrar cada registro completo en el modal
-        while ($row = $result_all->fetch_assoc()) {
-            echo "<div class='modal-grid'>";
-            echo "<h3>Envío del formulario: " . htmlspecialchars($row['Fecha_hora']) . "</h3>";
+    // Información Adicional
+    echo '<div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Información Adicional</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="fw-bold text-primary">Vinculación con la Universidad:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['vinculacion']) . '</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="fw-bold text-primary">Temática le interesaría CAPACITARSE:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['capacitarse']) . '</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="fw-bold text-primary">Acompañar luego de su graduación:</label>
+                        <p class="mb-2">' . htmlspecialchars($user['acompanar']) . '</p>
+                    </div>
+                </div>
+            </div>
+        </div>';
 
-            // Listado de campos de cada registro
-            $fields = [
-                'Apellido y Nombre' => $row['apellido_nombre'],
-                'DNI' => $row['DNI'],
-                'Ciudad de Residencia' => $row['ciudad'],
-                'Situación Laboral' => $row['situacion_laboral'],
-                'Empresa' => $row['empresa'],
-                'Localidad Empresa' => $row['localidadempresa'],
-                'Cargo que ocupa' => $row['cargo'],
-                'Área' => $row['area'],
-                'Mail laboral' => $row['mail'],
-                'Vínculo con la FIO' => $row['vinculacion'],
-                'Actividad' => $row['Actividad'],
-                'Es Docente' => $row['Docente'],
-                'Cargo de Docente' => $row['cargo_docente'],
-                'Departamento de Docente' => $row['Departamento_docente'],
-                'Si es BECARIO/A de Posgrado' => $row['becario'],
-                'Si es NO-DOCENTE Indique a qué Agrupamiento Pertenece y qué Actividad Desarrolla' => $row['no_docente'],
-                'Si está DESOCUPADO/A o es JUBILADO/A' => $row['desocupado'],
-                'Temática le interesaría CAPACITARSE' => $row['capacitarse'],
-                'Acompañar luego de su graduación' => $row['acompanar']
-            ];
-
-            // Mostrar los campos del formulario
-            foreach ($fields as $label => $value) {
-                echo "<p><strong>{$label}:</strong> " . (!empty($value) ? htmlspecialchars($value) : 'Sin información') . "</p>";
-            }
-
-            echo "</div><hr>"; // Separador entre registros
-        }
-    } else {
-        echo "<p>No se encontraron registros con el DNI o nombre proporcionado.</p>";
-    }
+    echo '</div>';
 } else {
-    echo "<p>No se encontró el usuario con el ID proporcionado.</p>";
+    // Log para depuración
+    error_log("No se encontraron datos para el usuario ID: " . $user_id);
+    echo "<p class='alert alert-danger'>No se encontró el usuario con el ID proporcionado.</p>";
 }
 
 $stmt->close();

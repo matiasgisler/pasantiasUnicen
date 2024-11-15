@@ -55,11 +55,13 @@ function updateFilterInput(selectElement) {
 
 function showModal(userId) {
     var modalContent = document.getElementById("modalContent");
+    modalContent.innerHTML = '<p>Cargando datos...</p>'; // Indicador de carga
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "get_user_data.php?id=" + userId, true);
 
     xhr.onload = function() {
         if (xhr.status === 200) {
+            console.log('Respuesta recibida:', xhr.responseText); // Log para depuración
             modalContent.innerHTML = xhr.responseText;
             var userModal = new bootstrap.Modal(document.getElementById('userModal'));
             userModal.show();
@@ -75,6 +77,7 @@ function showModal(userId) {
     };
 
     xhr.send();
+    console.log('Solicitando datos para el usuario ID:', userId); // Log para depuración
 }
 
 function addFilter() {
