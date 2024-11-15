@@ -72,12 +72,13 @@ if ($result === false) {
 }
 
 /**
- * Exporta los datos filtrados a un archivo CSV y los descarga.
+ * Exporta los datos filtrados a un archivo CSV con las columnas deseadas.
  *
  * @param mysqli $conn Conexión a la base de datos.
  * @param string $sql Consulta SQL con filtros aplicados.
+ * @param array $columns Columnas deseadas para exportar.
  */
-function exportToCSV($conn, $sql)
+function exportToCSV($conn, $sql, $columns)
 {
     // Configurar encabezados para la exportación a CSV
     header('Content-Type: text/csv; charset=UTF-8');
@@ -88,18 +89,28 @@ function exportToCSV($conn, $sql)
     // Crear el archivo CSV
     $output = fopen('php://output', 'w');
 
-    // Escribir encabezados en el archivo CSV
-    fputcsv($output, ['ID', 'Marca Temporal',  'Apellido y Nombre', 'Carrera', 'DNI', 'Fecha de Egreso', 'Teléfono', 'Correo', 'Ciudad', 'Empresa', 'Vinculación', 'Capacitarse', 'Acompañar']);
+    // Validar y preparar columnas
+    if (empty($columns)) {
+        die("Error: No se especificaron columnas para exportar.");
+    }
+
+    // Escribir encabezados personalizados en el archivo CSV
+    fputcsv($output, $columns);
+
+    // Construir la consulta SQL con columnas específicas
+    $columns_sql = implode(", ", array_map(fn($col) => $conn->real_escape_string($col), $columns));
+    $filtered_sql = preg_replace('/^SELECT \*/', "SELECT $columns_sql", $sql);
 
     // Ejecutar la consulta
-    $result = $conn->query($sql);
+    $result = $conn->query($filtered_sql);
     if ($result === false) {
         die("Error en la consulta para exportar: " . $conn->error);
     }
 
     // Escribir los datos en el archivo CSV
     while ($row = $result->fetch_assoc()) {
-        fputcsv($output, $row);
+        $filtered_row = array_intersect_key($row, array_flip($columns));
+        fputcsv($output, $filtered_row);
     }
 
     fclose($output);
@@ -108,9 +119,11 @@ function exportToCSV($conn, $sql)
 
 // Detectar si se solicita la exportación
 if (isset($_GET['export']) && $_GET['export'] == 1) {
-    exportToCSV($conn, $sql);
+    $columns = isset($_GET['columns']) ? $_GET['columns'] : [];
+    exportToCSV($conn, $sql, $columns);
 }
 ?>
+
 
 
 
@@ -122,103 +135,10 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interfaz de Administración</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-    .mt-rem {
-        margin-top: 1.5rem !important;
-    }
-
-    #ordenarPor {
-        margin-top: 2rem !important
-    }
-
-    .modal-content {
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 8px;
-        font-size: 16px;
-        color: #333;
-    }
-
-    .modal-grid p {
-        margin-bottom: 10px;
-        padding: 5px 0;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .modal-title {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #007BFF;
-        margin-bottom: 20px;
-    }
-
-    .modal-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .modal-grid p strong {
-        color: #007BFF;
-    }
-
-    body {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    h1 {
-        color: #007BFF;
-        text-align: center;
-        margin: 20px 0;
-    }
-
-    .table th,
-    .table td {
-        vertical-align: middle;
-    }
-
-    .btn-primary {
-        background-color: #007BFF;
-    }
-
-    .btn-lime {
-        background-color: #32CD32;
-        color: white;
-    }
-
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(0, 123, 255, 0.1);
-    }
-
-    .modal-dialog {
-        max-width: 80%;
-    }
-
-    .table .correo-col {
-        max-width: 200px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .filter-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .filter-column {
-        flex: 1 1 calc(33.33% - 10px);
-    }
-
-    .btn-space {
-        margin-right: 10px;
-    }
-
-    .table-hover tbody tr:hover td {
-        background: lightgreen;
-    }
-    </style>
+    <link rel="stylesheet" href="administracion.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="administracion.js" defer></script>
 </head>
 
 <body class="container-fluid py-4">
@@ -227,12 +147,12 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <div class="accordion" id="accordionExample">
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                <button class="accordion-button bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
                     aria-expanded="true" aria-controls="collapseOne">
-                    Filtros
+                    <p class="fs-3">Filtros</p>
                 </button>
             </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+            <div id="collapseOne" class="accordion-collapse collapse show">
                 <div class="accordion-body">
                     <!-- Botones de aplicar y quitar filtros fuera del modal  -->
                     <!-- <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#filterModal">Filtrar</button> -->
@@ -280,11 +200,11 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         </div>
     </div>
     <div>
-        <p>Cantidad de Registros: <?php echo $total_rows?></p>
+
         <form method="get" action="" id="filterForm" class="mb-4">
-            <div class="row g-4">
+            <div class="row g-4 mt-rem">
                 <div class="col-md-4">
-                    <label for="order_by" class="form-label">Ordenar por:</label>
+                    <label for="order_by" class="form-label ">Ordenar por:</label>
                     <select name="order_by" id="order_by" class="form-select">
                         <option value="id" <?php echo ($order_by === 'id') ? 'selected' : ''; ?>>ID</option>
                     </select>
@@ -304,33 +224,117 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                         onclick="orderBy(event)">Ordenar</button>
                 </div>
             </div>
-            <div>
+            <div class="mt-rem">
+
                 <form method="get" action="">
-                    <input type="hidden" name="filters"
-                        value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
-                    <input type="hidden" name="export" value="1">
-                    <button type="submit" class="btn btn-success">Exportar a CSV</button>
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header ">
+
+                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                    <p class="fs-3">Seleccionar columnas para exportar y/o mostrar</p>
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <input type="hidden" name="filters"
+                                        value='<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>'>
+                                    <input type="hidden" name="export" value="1">
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="id" id="column-id" checked data-column="id-col">
+                                            <label class="form-check-label" for="column-id">ID</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="apellido_nombre" id="column-apellido_nombre"
+                                                checked data-column="apellido_nombre-col">
+                                            <label class="form-check-label" for="column-apellido_nombre">Apellido y
+                                                Nombre</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="carrera" id="column-carrera" checked
+                                                data-column="carrera-col">
+                                            <label class="form-check-label" for="column-carrera">Carrera</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="DNI" id="column-DNI" checked
+                                                data-column="dni-col">
+                                            <label class="form-check-label" for="column-DNI">DNI</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="Fecha_egreso" id="column-Fecha_egreso" checked
+                                                data-column="fecha_egreso-col">
+                                            <label class="form-check-label" for="column-Fecha_egreso">Fecha de
+                                                Egreso</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="telefono" id="column-telefono" checked
+                                                data-column="telefono-col">
+                                            <label class="form-check-label" for="column-telefono">Teléfono</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="correo" id="column-correo" checked
+                                                data-column="correo-col">
+                                            <label class="form-check-label" for="column-correo">Correo</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="ciudad" id="column-ciudad" checked
+                                                data-column="ciudad-col">
+                                            <label class="form-check-label" for="column-ciudad">Ciudad de
+                                                Residencia</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="empresa" id="column-empresa" checked
+                                                data-column="empresa-col">
+                                            <label class="form-check-label" for="column-empresa">Nombre de la
+                                                Empresa</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="vinculacion" id="column-vinculacion" checked
+                                                data-column="vinculacion-col">
+                                            <label class="form-check-label" for="column-vinculacion">Vinculación con la
+                                                Universidad</label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success">Exportar a CSV</button>
                 </form>
+
             </div>
-        </form>
     </div>
+    </div>
+    </div>
+
+    </div>
+    <p class="h1">Cantidad de Registros: <?php echo $total_rows?></p>
+
     <table class="table table-striped table-bordered w-100 table-hover">
         <thead class="table-primary">
             <tr>
                 <th>Numero de la Fila</th>
                 <th>Acciones</th>
-                <th>Fecha y Hora (DD/MM/YYYY - hh:mm:ss )</th>
-                <th>Apellido y Nombre</th>
-                <th>Carrera</th>
-                <th>DNI</th>
-                <th>Fecha de Egreso(DD/MM/YYYY)</th>
-                <th>Teléfono</th>
-                <th class="correo-col">Correo</th>
-                <th>Ciudad de Residencia</th>
-                <th>Nombre de la Empresa / Organización:</th>
-                <th>Vinculación con la Universidad</th>
-                <th>Qué Temática le Interesaría CAPACITARSE</th>
-                <th>DE qué Manera la FIO lo/la Puede Acompañar Luego de su Graduación</th>
+                <th class="">ID</th>
+                <th class="">Apellido y Nombre</th>
+                <th class="">Carrera</th>
+                <th class="">DNI</th>
+                <th class="">Fecha de Egreso</th>
+                <th class="">Teléfono</th>
+                <th class="">Correo</th>
+                <th class="">Ciudad de Residencia</th>
+                <th class="">Nombre de la Empresa</th>
+                <th class="">Vinculación</th>
             </tr>
         </thead>
         <tbody>
@@ -341,39 +345,21 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <button class="btn btn-primary btn-sm btn-space"
                         onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
                 </td>
-                <td><?php
-                    if (!empty($row['Fecha_hora'])) {
-                        $fecha = new DateTime($row['Fecha_hora']);
-                        echo htmlspecialchars($fecha->format('d/m/Y H:i:s'));
-                    } else {
-                        echo '-';
-                    }
-                ?></td>
-                <td><?php echo !empty($row['apellido_nombre']) ? htmlspecialchars(ucwords(strtolower($row['apellido_nombre']))) : '-'; ?></td>
-                <td><?php echo !empty($row['carrera']) ? htmlspecialchars($row['carrera']) : '-'; ?></td>
-                
-                <td><?php echo !empty($row['DNI']) ? htmlspecialchars($row['DNI']) : '-'; ?></td>
-                <td><?php
-                    if (!empty($row['Fecha_egreso'])) {
-                        $fecha = new DateTime($row['Fecha_egreso']);
-                        echo htmlspecialchars($fecha->format('d/m/Y'));
-                    } else {
-                        echo '-';
-                    }
-                ?></td>
-                <td><?php echo !empty($row['telefono']) ? htmlspecialchars($row['telefono']) : '-'; ?></td>
-                <td class="correo-col"><?php echo !empty($row['correo']) ? htmlspecialchars($row['correo']) : '-'; ?>
-                </td>
-                <td><?php echo !empty($row['ciudad']) ? htmlspecialchars($row['ciudad']) : '-'; ?></td>
-                <td><?php echo !empty($row['empresa']) ? htmlspecialchars($row['empresa']) : '-'; ?></td>
-                <td><?php echo !empty($row['vinculacion']) ? htmlspecialchars($row['vinculacion']) : '-'; ?></td>
-                <td><?php echo !empty($row['capacitarse']) ? htmlspecialchars($row['capacitarse']) : '-'; ?></td>
-                <td><?php echo !empty($row['acompanar']) ? htmlspecialchars($row['acompanar']) : '-'; ?></td>
+                <td class=""><?php echo htmlspecialchars($row['id']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['carrera']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['DNI']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['telefono']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['correo']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['ciudad']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['empresa']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['vinculacion']); ?></td>
             </tr>
             <?php endwhile; ?>
         </tbody>
-        </tbody>
     </table>
+
 
     <!-- Paginación -->
     <div class="pagination mt-4 d-flex align-items-center justify-content-center">
@@ -416,183 +402,6 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
             </div>
         </div>
     </div>
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    function updateFilterInput(selectElement) {
-        const filterValueContainer = selectElement.closest('.filter-group').querySelector('.filter-value');
-        filterValueContainer.innerHTML = '';
-
-        if (selectElement.value === 'carrera') {
-            filterValueContainer.innerHTML = `
-                <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
-                    <option value="Ingeniería en Agrimensura">Ingeniería en Agrimensura</option>
-                    <option value="Ingeniería en Construcciones">Ingeniería en Construcciones (no vigente)</option>
-                    <option value="Ingeniería civil">Ingeniería civil</option>
-                    <option value="Ingeniería Electromecánica">Ingeniería Electromecánica</option>
-                    <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                    <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                    <option value="Profesorado en Matemática y Física">Profesorado en Matemática y Física</option>
-                    <option value="Profesorado en Química Y Merceología">Profesorado en Química Y Merceología</option>
-                    <option value="Químico">Químico</option>
-                    <option value="Ingeniería en Seguridad e Higiene en el Trabajo">Ingeniería en Seguridad e Higiene en el Trabajo</option>
-                    <option value="Licenciatura en Tecnología de los Alimentos">Licenciatura en Tecnología de los Alimentos<    /option>
-                    <option value="Profesorado en Química">Profesorado en Química</option>
-                    <option value="Técnico Universitario en Electromedicina">Técnico Universitario en Electromedicina</option>
-                    <option value="Licenciatura en Tecnología Médica">Licenciatura en Tecnología Médica</option>
-                    <option value="Licenciatura en Enseñanza de las Ciencias Naturales">Licenciatura en Enseñanza de las Ciencias Naturales</option>
-                    <option value="Maestría en Enseñanza de las Ciencias Experimentales">Maestría en Enseñanza de las Ciencias Experimentales</option>
-                    <option value="Maestría en Tecnología del Hormigón">Maestría en Tecnología del Hormigón</option>
-                </select>
-            `;
-        } else if (selectElement.value === 'situacion_laboral') {
-            filterValueContainer.innerHTML = `
-                <select class="form-control mt-rem" name="filter_value" title="Seleccione el valor a filtrar">
-                    <option value="Trabajo por cuenta propia">Trabajo por Cuenta Propia</option>
-                    <option value="Trabajo en relación de dependencia">Trabajo en Relación de Dependencia</option>
-                    <option value="Desempleado/a">Desempleado/a</option>
-                    <option value="Jubilado/a">Jubilado/a</option>
-                </select>
-            `;
-        } else if (selectElement.value === 'Fecha_egreso') {
-            filterValueContainer.innerHTML = `
-                <input type="year" class="form-control mt-rem" name="filter_value" title="Seleccione el año de egreso">
-            `;
-        } else {
-            filterValueContainer.innerHTML = `
-                <input type="text" class="form-control mt-rem" name="filter_value" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
-            `;
-        }
-    }
-
-    function showModal(userId) {
-        var modalContent = document.getElementById("modalContent");
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "get_user_data.php?id=" + userId, true);
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                modalContent.innerHTML = xhr.responseText;
-                var userModal = new bootstrap.Modal(document.getElementById('userModal'));
-                userModal.show();
-            } else {
-                console.error('Error al cargar datos del usuario:', xhr.statusText);
-                modalContent.innerHTML = "<p>Error al cargar datos del usuario.</p>";
-            }
-        };
-
-        xhr.onerror = function() {
-            console.error('Error de conexión con el servidor.');
-            modalContent.innerHTML = "<p>Error de conexión con el servidor.</p>";
-        };
-
-        xhr.send();
-    }
-
-    function addFilter() {
-        const filterContainer = document.getElementById('filterContainer');
-        const newFilterGroup = document.createElement('div');
-        newFilterGroup.classList.add('filter-group', 'mb-3');
-        newFilterGroup.innerHTML = `
-        <div class="row g-2">
-            <div class="col">
-                <label>Filtrar por:</label>
-                <select class="form-select filter-column" onchange="updateFilterInput(this)" title="Seleccione la columna para filtrar">
-                    <option value="">Seleccione</option>
-                    <option value="carrera">Carrera</option>
-                    <option value="DNI">DNI</option>
-                    <option value="apellido_nombre">Apellido y Nombre</option>
-                    <option value="ciudad">Ciudad</option>
-                    <option value="situacion_laboral">Situación Laboral</option>
-                    <option value="Fecha_egreso">Fecha de Egreso</option>
-                    <option value="empresa">Nombre de la Empresa</option>
-                </select>
-            </div>
-            <div class="col filter-value">
-                <input type="text" class="form-control mt-rem" placeholder="Valor a filtrar" title="Ingrese el valor a filtrar">
-            </div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-danger mt-rem" onclick="removeFilter(this)">Eliminar</button>
-            </div>
-        </div>
-    `;
-        filterContainer.appendChild(newFilterGroup);
-    }
-
-    function removeFilter(button) {
-        button.closest('.filter-group').remove();
-    }
-
-    function orderBy(event) {
-    event.preventDefault();
-    const column = document.getElementById("order_by").value;
-    const direction = document.getElementById("order_dir").value;
-
-    if (column && direction) {
-        // Crear un objeto con los parámetros actuales de la URL
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // Actualizar o agregar los parámetros de ordenación
-        urlParams.set('order_by', column);
-        urlParams.set('order_dir', direction);
-        
-        // Construir la nueva URL
-        const newUrl = window.location.pathname + '?' + urlParams.toString();
-        
-        // Realizar una petición AJAX
-        fetch(newUrl)
-            .then(response => response.text())
-            .then(html => {
-                // Crear un elemento temporal para parsear el HTML
-                const tempElement = document.createElement('div');
-                tempElement.innerHTML = html;
-                
-                // Actualizar solo la tabla y la paginación
-                document.querySelector('table').outerHTML = tempElement.querySelector('table').outerHTML;
-                document.querySelector('.pagination').outerHTML = tempElement.querySelector('.pagination').outerHTML;
-                
-                // Actualizar la URL del navegador sin recargar la página
-                window.history.pushState({}, '', newUrl);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-}
-
-    function applyFilters() {
-        const filters = [];
-        document.querySelectorAll('.filter-group').forEach(group => {
-            const column = group.querySelector('.filter-column').value;
-            const value = group.querySelector('.filter-value select, .filter-value input').value;
-            if (column && value) {
-                filters.push({
-                    column,
-                    value
-                });
-            }
-        });
-
-        const form = document.createElement('form');
-        form.method = 'get';
-        form.action = '';
-        const filtersInput = document.createElement('input');
-        filtersInput.type = 'hidden';
-        filtersInput.name = 'filters';
-        filtersInput.value = JSON.stringify(filters);
-        form.appendChild(filtersInput);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function clearFilters() {
-        window.location.href = window.location.pathname; // Recargar la página sin parámetros de filtro
-    }
-    </script>
 
 </body>
 
