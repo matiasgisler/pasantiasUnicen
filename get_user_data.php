@@ -55,19 +55,19 @@ if ($record) {
                 'Situación Laboral' => $row['situacion_laboral'],
                 'Empresa' => $row['empresa'],
                 'Localidad Empresa' => $row['localidadempresa'],
-                'Cargo' => $row['cargo'],
+                'Cargo que ocupa' => $row['cargo'],
                 'Área' => $row['area'],
-                'Mail' => $row['mail'],
+                'Mail laboral' => $row['mail'],
                 'Vínculo con la FIO' => $row['vinculacion'],
                 'Actividad' => $row['Actividad'],
-                'Docente' => $row['Docente'],
-                'Cargo Docente' => $row['cargo_docente'],
-                'Departamento Docente' => $row['Departamento_docente'],
-                'Becario' => $row['becario'],
-                'No Docente' => $row['no_docente'],
-                'Desocupado' => $row['desocupado'],
-                'Capacitarse' => $row['capacitarse'],
-                'Acompañar' => $row['acompanar']
+                'Es Docente' => $row['Docente'],
+                'Cargo de Docente' => $row['cargo_docente'],
+                'Departamento de Docente' => $row['Departamento_docente'],
+                'Si es BECARIO/A de Posgrado' => $row['becario'],
+                'Si es NO-DOCENTE Indique a qué Agrupamiento Pertenece y qué Actividad Desarrolla' => $row['no_docente'],
+                'Si está DESOCUPADO/A o es JUBILADO/A' => $row['desocupado'],
+                'Temática le interesaría CAPACITARSE' => $row['capacitarse'],
+                'Acompañar luego de su graduación' => $row['acompanar']
             ];
 
             // Mostrar los campos del formulario

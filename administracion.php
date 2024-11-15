@@ -250,6 +250,16 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="Fecha_hora" id="column-Fecha_hora" checked data-column="Fecha_hora-col">
+                                            <label class="form-check-label" for="column-Fecha_hora">Fecha y hora Realizado</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="id" id="column-id" checked data-column="id-col">
+                                            <label class="form-check-label" for="column-id">ID</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
                                                 name="columns[]" value="apellido_nombre" id="column-apellido_nombre"
                                                 checked data-column="apellido_nombre-col">
                                             <label class="form-check-label" for="column-apellido_nombre">Apellido y
@@ -302,6 +312,12 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input column-toggle" type="checkbox"
+                                                name="columns[]" value="capacitarse" id="column-capacitarse" checked
+                                                data-column="capacitarse-col">
+                                            <label class="form-check-label" for="column-capacitarse">Sobre qué temática le interesaría CAPACITARSE</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input column-toggle" type="checkbox"
                                                 name="columns[]" value="vinculacion" id="column-vinculacion" checked
                                                 data-column="vinculacion-col">
                                             <label class="form-check-label" for="column-vinculacion">Vinculación con la
@@ -313,7 +329,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 </form>
 
             </div>
-    </div>
+        </div>
     </div>
     </div>
 
@@ -325,16 +341,18 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
             <tr>
                 <th>Numero de la Fila</th>
                 <th>Acciones</th>
-                <th class="">ID</th>
-                <th class="">Apellido y Nombre</th>
-                <th class="">Carrera</th>
-                <th class="">DNI</th>
-                <th class="">Fecha de Egreso</th>
-                <th class="">Teléfono</th>
-                <th class="">Correo</th>
-                <th class="">Ciudad de Residencia</th>
-                <th class="">Nombre de la Empresa</th>
-                <th class="">Vinculación</th>
+                <th>Fecha y hora realizada</th>
+                <th>ID</th>
+                <th>Apellido y Nombre</th>
+                <th>Carrera</th>
+                <th>DNI</th>
+                <th>Fecha de Egreso</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Ciudad de Residencia</th>
+                <th>Nombre de la Empresa</th>
+                <th>Sobre qué temática le interesaría CAPACITARSE.</th>
+                <th>De qué manera la FIO lo/la puede acompañar luego de su graduación.</th>
             </tr>
         </thead>
         <tbody>
@@ -345,6 +363,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <button class="btn btn-primary btn-sm btn-space"
                         onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
                 </td>
+                <td class=""><?php echo htmlspecialchars($row['Fecha_hora']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['id']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['carrera']); ?></td>
@@ -354,6 +373,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 <td class=""><?php echo htmlspecialchars($row['correo']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['ciudad']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['empresa']); ?></td>
+                <td class=""><?php echo htmlspecialchars($row['capacitarse']); ?></td>
                 <td class=""><?php echo htmlspecialchars($row['vinculacion']); ?></td>
             </tr>
             <?php endwhile; ?>
