@@ -2,7 +2,7 @@
 // Datos de conexión
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = "root";
 $dbname = "practicas";
 $i = 1;
 
@@ -431,6 +431,60 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         });
     });
 });
+
+// Función para cargar los registros de una página específica
+function loadRecords(page = 1) {
+        const userId = <?php echo json_encode($user_id); ?>; // Pasar el ID desde PHP
+
+        fetch(`get_user_data.php?id=${userId}&page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('modalContent').innerHTML = `<p class="alert alert-danger">${data.error}</p>`;
+                    return;
+                }
+
+                const records = data.records;
+                const pagination = data.pagination;
+
+                // Renderizar los registros
+                let html = '';
+                records.forEach(record => {
+                    html += `
+                        <div class="record">
+                            <h3>Envío del formulario: ${record.Fecha_hora || 'No disponible'}</h3>
+                            <p><strong>Apellido y Nombre:</strong> ${record.apellido_nombre || 'No disponible'}</p>
+                            <p><strong>DNI:</strong> ${record.dni || 'No disponible'}</p>
+                            <p><strong>Ciudad:</strong> ${record.ciudad || 'No disponible'}</p>
+                            <p><strong>Carrera:</strong> ${record.carrera || 'No disponible'}</p>
+                            <hr>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('modalContent').innerHTML = html;
+
+                // Renderizar la paginación
+                let paginationHtml = '';
+                if (pagination.current_page > 1) {
+                    paginationHtml += `<button class="btn btn-primary" onclick="loadRecords(${pagination.current_page - 1})">Anterior</button>`;
+                }
+                if (pagination.current_page < pagination.total_pages) {
+                    paginationHtml += `<button class="btn btn-primary" onclick="loadRecords(${pagination.current_page + 1})">Siguiente</button>`;
+                }
+
+                document.getElementById('modalPagination').innerHTML = paginationHtml;
+            })
+            .catch(error => {
+                console.error('Error al cargar los registros:', error);
+            });
+    }
+
+    // Cargar la primera página al abrir el modal
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRecords(1);
+    });
+
 
 </script>
 </html>

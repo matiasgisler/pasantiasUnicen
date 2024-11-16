@@ -1,7 +1,9 @@
 .mt-rem {
     margin-top: 1.5rem !important;
 }
-
+.indicators{
+    bottom: -3rem !important;
+}
 #ordenarPor {
     margin-top: 2rem !important
 }
