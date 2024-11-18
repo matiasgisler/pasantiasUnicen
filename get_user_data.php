@@ -2,7 +2,7 @@
 // Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
-$password = "root";
+$password = "";
 $dbname = "practicas";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -43,8 +43,8 @@ if ($record) {
 
     if ($result_all->num_rows > 0) {
         echo '<div id="carouselExample" class="carousel slide position-relative">';
-
-
+        echo "<h3>Cantidad de registros: ".$result_all->num_rows."</h3>";
+        echo "<span></span>";
         // Generar los indicadores del carrusel
         echo '<div class="carousel-indicators" style="bottom: -2.5rem !important;">';
         for ($i = 0; $i < $result_all->num_rows; $i++) {
@@ -64,12 +64,12 @@ if ($record) {
             $isActive = false; // Después del primer registro, ya no es activo
 
             echo "<div class='carousel-item $activeClass'>";
-
+            
             // Fecha de envío
             $fecha_hora = isset($row['Fecha_hora']) ? htmlspecialchars($row['Fecha_hora']) : 'No disponible';
             echo '<div class="container-fluid mb-4">';
             echo '<h3 class="mb-3">Envío del formulario: ' . $fecha_hora . '</h3>';
-
+            
             // Información Personal
             echo '<div class="card mb-3">
             <div class="card-header bg-light">

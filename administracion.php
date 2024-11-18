@@ -2,7 +2,7 @@
 // Datos de conexión
 $servername = "localhost";
 $username = "root";
-$password = "root";
+$password = "";
 $dbname = "practicas";
 $i = 1;
 
@@ -236,10 +236,8 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 <div class="col-md-4">
                     <label for="order_dir" class="form-label">Dirección:</label>
                     <select name="order_dir" id="order_dir" class="form-select">
-                        <option value="ASC" <?php echo ($order_dir === 'ASC') ? 'selected' : ''; ?>>Menor a
-                            Mayor</option>
-                        <option value="DESC" <?php echo ($order_dir === 'DESC') ? 'selected' : ''; ?>>Mayor
-                            a menor</option>
+                        <option value="ASC" <?php echo ($order_dir === 'ASC') ? 'selected' : ''; ?>>A-Z</option>
+                        <option value="DESC" <?php echo ($order_dir === 'DESC') ? 'selected' : ''; ?>>Z-A</option>
                     </select>
 
                 </div>
