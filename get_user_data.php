@@ -40,11 +40,10 @@ if ($record) {
 
     $stmt_all->execute();
     $result_all = $stmt_all->get_result();
-
     if ($result_all->num_rows > 0) {
         echo '<div id="carouselExample" class="carousel slide position-relative">';
-
-
+        echo $result_all->num_rows;
+       
         // Generar los indicadores del carrusel
         echo '<div class="carousel-indicators" style="bottom: -2.5rem !important;">';
         for ($i = 0; $i < $result_all->num_rows; $i++) {
