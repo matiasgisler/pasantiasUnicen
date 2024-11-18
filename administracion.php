@@ -180,8 +180,8 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                     <!-- Botones de aplicar y quitar filtros fuera del modal  -->
                     <!-- <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#filterModal">Filtrar</button> -->
                     <div class="modal-footer gap-3 col-gap-3">
-                        <button type="button" class="btn btn-secondary" onclick="addFilter()">Agregar filtro</button>
                         <button type="button" class="btn btn-primary" onclick="applyFilters()">Aplicar filtros</button>
+                        <button type="button" class="btn btn-secondary" onclick="addFilter()">Agregar filtro</button>
                         <button type="button" class="btn btn-secondary" onclick="clearFilters()">Quitar Filtros</button>
                     </div>
                     <!-- Modal de Filtros -->
@@ -236,10 +236,8 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                 <div class="col-md-4">
                     <label for="order_dir" class="form-label">Dirección:</label>
                     <select name="order_dir" id="order_dir" class="form-select">
-                        <option value="ASC" <?php echo ($order_dir === 'ASC') ? 'selected' : ''; ?>>Menor a
-                            Mayor</option>
-                        <option value="DESC" <?php echo ($order_dir === 'DESC') ? 'selected' : ''; ?>>Mayor
-                            a menor</option>
+                        <option value="ASC" <?php echo ($order_dir === 'ASC') ? 'selected' : ''; ?>>A-Z</option>
+                        <option value="DESC" <?php echo ($order_dir === 'DESC') ? 'selected' : ''; ?>>Z-A</option>
                     </select>
 
                 </div>

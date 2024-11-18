@@ -37,11 +37,9 @@ function updateFilterInput(selectElement) {
         filterValueContainer.innerHTML = `
             <div class="row">
                 <div class="col">
-                    <label for="year_from">Desde:</label>
                     <input type="number" id="year_from" class="form-control mt-rem" name="filter_value_from" min="1900" max="${new Date().getFullYear()}" placeholder="Año desde">
                 </div>
                 <div class="col">
-                    <label for="year_to">Hasta:</label>
                     <input type="number" id="year_to" class="form-control mt-rem" name="filter_value_to" min="1900" max="${new Date().getFullYear()}" placeholder="Año hasta">
                 </div>
             </div>
