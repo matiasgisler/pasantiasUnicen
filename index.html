@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .admin-option {
+            transition: transform 0.3s ease-in-out;
+        }
+        .admin-option:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Panel de Administración</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <div class="card admin-option">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Administración General</h5>
+                        <p class="card-text">Acceda a las opciones generales de administración del sistema.</p>
+                        <a href="administracion.php" class="btn btn-primary">Ir a Administración</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card admin-option">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Subir CSV</h5>
+                        <p class="card-text">Suba archivos CSV para importar o actualizar datos en el sistema.</p>
+                        <a href="subir_csv.html" class="btn btn-success">Ir a Subir CSV</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

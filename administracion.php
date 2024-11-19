@@ -1,19 +1,9 @@
 <?php
-// Datos de conexión
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "practicas";
-$i = 1;
-
-// Crear conexión
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verificar la conexión
-if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
+require_once __DIR__ . "/db/conectar.php";
+if (!isset($conn)) {
+    die("La conexión a la base de datos no está definida.");
 }
-
+$i=1;
 // Configurar la codificación de la base de datos
 $conn->set_charset("utf8mb4");
 

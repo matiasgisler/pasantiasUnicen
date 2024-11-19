@@ -15,7 +15,7 @@ function updateFilterInput(selectElement) {
             <option value="Profesorado en Química Y Merceología">Profesorado en Química Y Merceología</option>
             <option value="Químico">Químico</option>
             <option value="Ingeniería en Seguridad e Higiene en el Trabajo">Ingeniería en Seguridad e Higiene en el Trabajo</option>
-            <option value="Licenciatura en Tecnología de los Alimentos">Licenciatura en Tecnología de los Alimentos<    /option>
+            <option value="Licenciatura en Tecnología de los Alimentos">Licenciatura en Tecnología de los Alimentos</option>
             <option value="Profesorado en Química">Profesorado en Química</option>
             <option value="Técnico Universitario en Electromedicina">Técnico Universitario en Electromedicina</option>
             <option value="Licenciatura en Tecnología Médica">Licenciatura en Tecnología Médica</option>
