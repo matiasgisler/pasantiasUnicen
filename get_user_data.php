@@ -1,12 +1,5 @@
 <?php
-// Configuración de la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "practicas";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
+require_once __DIR__ . "/db/conectar.php";
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
@@ -66,7 +59,7 @@ if ($record) {
             echo "<div class='carousel-item $activeClass'>";
             
             // Fecha de envío
-            $fecha_hora = isset($row['Fecha_hora']) ? htmlspecialchars($row['Fecha_hora']) : 'No disponible';
+            $fecha_hora = isset($row['Fecha_hora']) ? htmlspecialchars($row['Fecha_hora']) : '-';
             echo '<div class="container-fluid mb-4">';
             echo '<h3 class="mb-3">Envío del formulario: ' . $fecha_hora . '</h3>';
             
@@ -87,15 +80,34 @@ if ($record) {
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold text-primary">Ciudad de Residencia:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['ciudad'] ?? 'No disponible') . '</p>
+                        <p class="mb-2">' . htmlspecialchars($row['ciudad'] ?? '-') . '</p>
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold text-primary">Carrera:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['carrera'] ?? 'No disponible') . '</p>
+                        <p class="mb-2">' . htmlspecialchars($row['carrera'] ?? '-') . '</p>
                     </div>
                 </div>
             </div>
         </div>';
+	// Contactos
+            echo '<div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Contacto</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Telefono:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['telefono'] ?? '-') . '</p>
+                    </div>
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Correo Electronico:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['correo'] ?? '-') . '</p>
+                </div>
+		    </div>
+            </div>
+        </div>';
+
 
             // Información Laboral
             echo '<div class="card mb-3">
@@ -104,41 +116,82 @@ if ($record) {
             </div>
             <div class="card-body">
                 <div class="row g-3">
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Situación Laboral:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['situacion_laboral'] ?? '-') . '</p>
+                    </div>
                     <div class="col-md-6">
                         <label class="fw-bold text-primary">Empresa:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['empresa'] ?? 'No disponible') . '</p>
+                        <p class="mb-2">' . htmlspecialchars($row['empresa'] ?? '-') . '</p>
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold text-primary">Situación Laboral:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['situacion_laboral'] ?? 'No disponible') . '</p>
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Cargo:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['cargo'] ?? '-') . '</p>
                     </div>
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Area:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['area'] ?? '-') . '</p>
+                    </div>
+		    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Localidad de la Empresa:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['localidadempresa'] ?? '-') . '</p>
+                    </div>
+                    
                 </div>
             </div>
         </div>';
-
-            // Información Adicional
+            // Información Vinculo con la FIO
             echo '<div class="card mb-3">
             <div class="card-header bg-light">
-                <h6 class="mb-0">Información Adicional</h6>
+                <h6 class="mb-0">Vinculo con la Universidad:</h6><p class="mb-2">' . htmlspecialchars($row['vinculacion'] ?? '-') . '</p>
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-12">
-                        <label class="fw-bold text-primary">Vinculación con la Universidad:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['vinculacion'] ?? 'No disponible') . '</p>
+                        <label class="fw-bold text-primary">Es Docente?:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['Docente'] ?? '-') . '</p>
                     </div>
                     <div class="col-12">
-                        <label class="fw-bold text-primary">Temática le interesaría CAPACITARSE:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['capacitarse'] ?? 'No disponible') . '</p>
+                        <label class="fw-bold text-primary">Cargo que ocupa en la Universidad:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['cargo_docente'] ?? '-') . '</p>
                     </div>
-                    <div class="col-12">
-                        <label class="fw-bold text-primary">Acompañar luego de su graduación:</label>
-                        <p class="mb-2">' . htmlspecialchars($row['acompanar'] ?? 'No disponible') . '</p>
+		    <div class="col-12">
+                        <label class="fw-bold text-primary">Departamento donde Cumple Funciones:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['Departamento_docente'] ?? '-') . '</p>
+                    </div>
+		    <div class="col-12">
+                        <label class="fw-bold text-primary">Becario/a de Posgrado:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['becario'] ?? '-') . '</p>
+                    </div>
+		    <div class="col-12">
+                        <label class="fw-bold text-primary">NO DOCENTE:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['no_docente'] ?? '-') . '</p>
+                    </div>
+		            <div class="col-12">
+                        <label class="fw-bold text-primary">Desocupado y/o Jubilado:</label>
+                        <p class="mb-2">' . htmlspecialchars($row['desocupado'] ?? '-') . '</p>
                     </div>
                 </div>
             </div>
+            </div>';
+            	// Información Adicional
+                echo '<div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Información Adicional</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                <div class="col-12">
+                            <label class="fw-bold text-primary">Tematica de Capacitarse:</label>
+                            <p class="mb-2">' . htmlspecialchars($row['capacitarse'] ?? '-') . '</p>
+                        </div>
+                <div class="col-12">
+                            <label class="fw-bold text-primary">De que manerra puede Acompañar la FIO:</label>
+                            <p class="mb-2">' . htmlspecialchars($row['acompanar'] ?? '-') . '</p>
+                        </div>
+            </div>
+            </div>
         </div>';
-
             echo '</div>'; // Cierra la tarjeta actual
             echo '</div>'; // Cierra el item del carrusel
         }
