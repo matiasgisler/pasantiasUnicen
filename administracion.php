@@ -3,7 +3,7 @@ require_once __DIR__ . "/db/conectar.php";
 if (!isset($conn)) {
     die("La conexión a la base de datos no está definida.");
 }
-$i=1;
+$i = 1;
 // Configurar la codificación de la base de datos
 $conn->set_charset("utf8mb4");
 
@@ -154,8 +154,35 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <script src="administracion.js"></script>
 </head>
 
-    <body class="container-fluid py-4">
-    <h1>Interfaz de Administración</h1>
+<body class="container-fluid py-4">
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i data-lucide="home" class="me-2"></i>
+                Inicio
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="subir_csv.html">
+                            <i data-lucide="upload" class="me-2"></i>
+                            Subir CSV
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <h1 class="text-center mb-4">Interfaz de Administración</h1>
+
+    <div class="accordion" id="accordionExample">
+        <!-- Rest of the accordion content remains unchanged -->
+    </div>
+
 
     <div class="accordion" id="accordionExample">
         <div class="accordion-item">
@@ -193,7 +220,7 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
                                             <option value="ciudad">Ciudad</option>
                                             <option value="situacion_laboral">Situación Laboral</option>
                                             <option value="Fecha_egreso">Año de Egreso</option>
-                                            
+
                                             <option value="correo">Correo</option>
                                             <option value="empresa">Nombre de la Empresa</option>
                                         </select>
@@ -326,13 +353,13 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     </div>
 
     </div>
-    <p class="h1">Cantidad de Registros: <?php echo $total_rows?></p>
+    <p class="h1">Cantidad de Registros: <?php echo $total_rows ?></p>
 
     <table class="table table-striped table-bordered w-100 table-hover">
         <thead class="table-primary">
             <tr>
-            <th >Nro de fila</th>
-            <th >Funciones</th>
+                <th>Nro de fila</th>
+                <th>Funciones</th>
                 <th class="apellido_nombre-col">Apellido y Nombre</th>
                 <th class="carrera-col">Carrera</th>
                 <th class="dni-col">DNI</th>
@@ -346,22 +373,22 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         </thead>
         <tbody>
             <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($i++); ?></td>
-                <td>
-                    <button class="btn btn-primary btn-sm btn-space"
-                        onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
-                </td>
-                <td class="apellido_nombre-col"><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
-                <td class="carrera-col"><?php echo htmlspecialchars($row['carrera']); ?></td>
-                <td class="dni-col"><?php echo htmlspecialchars($row['DNI']); ?></td>
-                <td class="fecha_egreso-col"><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
-                <td class="telefono-col"><?php echo htmlspecialchars($row['telefono']); ?></td>
-                <td class="correo-col"><?php echo htmlspecialchars($row['correo']); ?></td>
-                <td class="ciudad-col"><?php echo htmlspecialchars($row['ciudad']); ?></td>
-                <td class="empresa-col"><?php echo htmlspecialchars($row['empresa']); ?></td>
-                <td class="vinculacion-col"><?php echo htmlspecialchars($row['vinculacion']); ?></td>
-            </tr>
+                <tr>
+                    <td><?php echo htmlspecialchars($i++); ?></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm btn-space"
+                            onclick="showModal(<?php echo htmlspecialchars($row['id']); ?>)">Ver</button>
+                    </td>
+                    <td class="apellido_nombre-col"><?php echo htmlspecialchars($row['apellido_nombre']); ?></td>
+                    <td class="carrera-col"><?php echo htmlspecialchars($row['carrera']); ?></td>
+                    <td class="dni-col"><?php echo htmlspecialchars($row['DNI']); ?></td>
+                    <td class="fecha_egreso-col"><?php echo htmlspecialchars($row['Fecha_egreso']); ?></td>
+                    <td class="telefono-col"><?php echo htmlspecialchars($row['telefono']); ?></td>
+                    <td class="correo-col"><?php echo htmlspecialchars($row['correo']); ?></td>
+                    <td class="ciudad-col"><?php echo htmlspecialchars($row['ciudad']); ?></td>
+                    <td class="empresa-col"><?php echo htmlspecialchars($row['empresa']); ?></td>
+                    <td class="vinculacion-col"><?php echo htmlspecialchars($row['vinculacion']); ?></td>
+                </tr>
             <?php endwhile; ?>
         </tbody>
     </table>
@@ -370,8 +397,8 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
     <!-- Paginación -->
     <div class="pagination mt-4 d-flex align-items-center justify-content-center">
         <?php if ($page > 1): ?>
-        <a href="?page=<?php echo $page - 1; ?>&filters=<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>"
-            class="btn btn-secondary me-2">Anterior</a>
+            <a href="?page=<?php echo $page - 1; ?>&filters=<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>"
+                class="btn btn-secondary me-2">Anterior</a>
         <?php endif; ?>
 
         <form method="get" class="d-flex align-items-center">
@@ -386,8 +413,8 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         </form>
 
         <?php if ($page < $total_pages): ?>
-        <a href="?page=<?php echo $page + 1; ?>&filters=<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>"
-            class="btn btn-secondary ms-2">Siguiente</a>
+            <a href="?page=<?php echo $page + 1; ?>&filters=<?php echo isset($_GET['filters']) ? htmlspecialchars($_GET['filters']) : ""; ?>"
+                class="btn btn-secondary ms-2">Siguiente</a>
         <?php endif; ?>
     </div>
 
@@ -409,16 +436,18 @@ if (isset($_GET['export']) && $_GET['export'] == 1) {
         </div>
     </div>
 </body>
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
     document.querySelectorAll('.column-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const columnClass = this.getAttribute('data-column');
-        const columnCells = document.querySelectorAll(`.${columnClass}`);
-        columnCells.forEach(cell => {
-            cell.style.display = this.checked ? '' : 'none';
+        checkbox.addEventListener('change', function() {
+            const columnClass = this.getAttribute('data-column');
+            const columnCells = document.querySelectorAll(`.${columnClass}`);
+            columnCells.forEach(cell => {
+                cell.style.display = this.checked ? '' : 'none';
+            });
         });
     });
-});
-
+    lucide.createIcons();
 </script>
+
 </html>

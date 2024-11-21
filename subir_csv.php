@@ -2,13 +2,19 @@
 // Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = "root";
 $dbname = "practicas";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
+}
+
+// Check file extension
+$file_extension = pathinfo($_FILES['csvFile']['name'], PATHINFO_EXTENSION);
+if (strtolower($file_extension) !== 'csv') {
+    displayResult('Error de Formato', 'El archivo debe ser un CSV válido.', false);
 }
 
 // Función para ordenar palabras en el nombre
@@ -24,6 +30,18 @@ function ordenar_nombre($nombre) {
     return implode(' ', $nombre_capitalizado);
 }
 
+function displayResult($title, $message, $isSuccess) {
+    $template = file_get_contents('result_template.html');
+    $messageClass = $isSuccess ? 'text-success' : 'text-danger';
+    
+    $template = str_replace('{{TITLE}}', $title, $template);
+    $template = str_replace('{{MESSAGE}}', $message, $template);
+    $template = str_replace('{{MESSAGE_CLASS}}', $messageClass, $template);
+    
+    echo $template;
+    exit;
+}
+
 // Función para validar y convertir fechas con hora
 function formatear_fecha_hora($fecha_str) {
     $fecha = DateTime::createFromFormat('d/m/Y H:i:s', $fecha_str);
@@ -37,8 +55,12 @@ function formatear_fecha($fecha_str) {
 }
 
 // Ruta del archivo CSV
-$csvFilePath = "C:\\Users\\matia\\Desktop\\Encuesta graduados (Respuestas) - Respuestas de formulario 1.csv";
-
+// $csvFilePath = "C:\\Users\\matia\\Desktop\\Encuesta graduados (Respuestas) - Respuestas de formulario 1.csv";
+if(isset($_FILES['csvFile']) && $_FILES['csvFile']['error'] == 0){
+    $csvFilePath = $_FILES['csvFile']['tmp_name'];
+} else {
+    die("Error: No se ha subido ningún archivo o ha ocurrido un error en la subida.");
+}
 // Intentar abrir el archivo CSV
 if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
     // Saltar la primera fila de encabezado
@@ -124,9 +146,13 @@ if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
     }
 
     fclose($handle);
-    echo "Importación completada correctamente.";
+    // echo "Importación completada correctamente.";
+    displayResult('Importación Exitosa', 'La importación del archivo CSV se ha completado correctamente.', true);
+
 } else {
-    echo "Error al abrir el archivo CSV.";
+    // echo "Error al abrir el archivo CSV.";
+    displayResult('Error de Importación', 'Ha ocurrido un error al abrir el archivo CSV. Por favor, inténtelo de nuevo.', false);
+
 }
 
 // Cerrar conexión
